@@ -1,0 +1,8 @@
+{
+  "name": "Remix Academic Mastery",
+  "description": "Adaptive curriculum mastery system transforming school notes into durable academic retention and exam readiness.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
