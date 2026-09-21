@@ -1,0 +1,116 @@
+@import "@fontsource-variable/figtree";
+@import "tailwindcss";
+@import "katex/dist/katex.min.css";
+
+/* Termwise design tokens.
+   Foundation: deep academic navy + cool blue accent on calm, cool neutrals. */
+@theme {
+  --font-sans: "Figtree Variable", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+
+  --color-navy-950: #0d1526;
+  --color-navy-900: #141e33;
+  --color-navy-800: #1b2a4a;
+  --color-navy-700: #263a68;
+
+  --color-brand-700: #2246a6;
+  --color-brand-600: #2b57cc;
+  --color-brand-500: #4477e8;
+  --color-brand-400: #678fdc;
+  --color-brand-200: #cddaf7;
+  --color-brand-100: #e3ebfb;
+  --color-brand-50: #f0f5fe;
+
+  --color-canvas: #f6f8fb;
+  --color-surface: #ffffff;
+  --color-sunken: #eef2f7;
+  --color-line: #e1e6ef;
+  --color-line-strong: #c9d1e0;
+
+  --color-ink: #141e33;
+  --color-ink-2: #465169;
+  --color-ink-3: #5d6980;
+  --color-ink-4: #8792a6;
+
+  --color-ok: #1d7a56;
+  --color-ok-soft: #e9f5ef;
+  --color-warn: #95610a;
+  --color-warn-soft: #fbf3e3;
+  --color-bad: #b23a32;
+  --color-bad-soft: #fbeceb;
+
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-xl: 18px;
+
+  --shadow-pop: 0 12px 32px -10px rgb(20 30 51 / 0.22), 0 0 0 1px rgb(20 30 51 / 0.06);
+
+  --ease-out-soft: cubic-bezier(0.2, 0, 0, 1);
+}
+
+@layer base {
+  html { -webkit-text-size-adjust: 100%; scroll-padding-top: 5rem; }
+  body {
+    background: var(--color-canvas);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+    overflow-x: hidden;
+  }
+  ::selection { background: var(--color-brand-200); color: var(--color-navy-950); }
+  :focus-visible { outline: 2px solid var(--color-brand-500); outline-offset: 2px; }
+  button, [role="button"], summary { cursor: pointer; }
+  button:disabled { cursor: not-allowed; }
+  input, textarea, select { font: inherit; color: inherit; }
+}
+
+/* Type scale: one family, three weights (400/500/600). */
+.t-display { font-size: 2rem; line-height: 2.375rem; font-weight: 600; letter-spacing: -0.022em; text-wrap: balance; }
+.t-title   { font-size: 1.5rem; line-height: 2rem; font-weight: 600; letter-spacing: -0.017em; text-wrap: balance; }
+.t-h2      { font-size: 1.125rem; line-height: 1.625rem; font-weight: 600; letter-spacing: -0.01em; }
+.t-body    { font-size: 0.9375rem; line-height: 1.5rem; }
+.t-small   { font-size: 0.8125rem; line-height: 1.25rem; }
+.t-micro   { font-size: 0.75rem; line-height: 1rem; }
+.tnum      { font-variant-numeric: tabular-nums; }
+@media (max-width: 640px) {
+  .t-display { font-size: 1.625rem; line-height: 2rem; }
+  .t-title   { font-size: 1.3125rem; line-height: 1.75rem; }
+}
+
+.no-scrollbar { scrollbar-width: none; }
+.no-scrollbar::-webkit-scrollbar { display: none; }
+
+/* Animated strike for completed tasks */
+.strike {
+  background: linear-gradient(currentColor, currentColor) no-repeat 0 58% / 0% 1px;
+  transition: background-size 0.28s var(--ease-out-soft), color 0.2s;
+}
+.strike[data-done="true"] { background-size: 100% 1px; color: var(--color-ink-4); }
+
+/* Skeleton */
+@keyframes tw-sheen { 0% { background-position: 100% 0; } 100% { background-position: -100% 0; } }
+.skeleton {
+  background: linear-gradient(90deg, var(--color-sunken) 30%, #e5eaf2 50%, var(--color-sunken) 70%);
+  background-size: 200% 100%;
+  animation: tw-sheen 1.8s ease-in-out infinite;
+  border-radius: var(--radius-sm);
+}
+
+/* Lesson reading surface */
+.lesson-body { font-size: 1.0625rem; line-height: 1.75; }
+.lesson-body p { margin: 0 0 1rem; text-wrap: pretty; }
+.lesson-body .katex { font-size: 1.06em; }
+.katex-display { margin: 1.5rem 0 !important; overflow-x: auto; overflow-y: hidden; padding: 0.25rem 0; }
+.katex-display > .katex { font-size: 1.22em; }
+.prose-math .katex-display { margin: 0.5rem 0 !important; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  .skeleton { animation: none; }
+}
