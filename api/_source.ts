@@ -6,4 +6,4 @@
 // "Cannot find module '.../furtherMathCurriculum.js'" at runtime.)
 import app from '../server.ts';
 
-export default app;
+module.exports = app;
