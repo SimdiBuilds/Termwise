@@ -31,3 +31,20 @@ Shared learning pieces live in `src/components/learning` (`QuestionBlock`, `Feed
 ## Brand assets
 `public/` holds the favicon, apple-touch icon, social image and full logo. `src/components/brand/logoPaths.ts` is the logo traced to vector
 from the supplied PNG. Supply a vector master when you have one and regenerate that file for sharper large-size edges.
+
+## Vercel deployment note
+
+`api/index.js` is a **pre-bundled, committed build artifact** — not hand-written, don't edit it directly.
+Vercel's own TypeScript function builder (transpile-per-file + trace, not a full bundle) silently
+dropped a local relative import (`server/data/furtherMathCurriculum.ts`) at deploy time, producing
+`Cannot find module '.../furtherMathCurriculum.js'` at runtime. The fix: `api/_source.ts` (the real
+entry point, underscore-prefixed so Vercel skips it when scanning `api/` for routes) is bundled with
+esbuild into a single self-contained `api/index.js` via `npm run build:api`, which every `npm run build`
+also runs. `api/index.js` is committed to git so Vercel never has to transpile or trace this file itself
+— it just deploys one finished file plus real npm packages from `node_modules`. Verified by running the
+bundle from a directory containing nothing but `index.js` and a copy of `node_modules` — no `server.ts`,
+no `server/`, nothing else from the repo — and it served `/api/health`, `/api/settings` and
+`/api/curriculum/subjects` correctly.
+
+If you add a new file under `server/` and it isn't showing up after deploying, you forgot to run
+`npm run build:api` (or `npm run build`) before committing.
