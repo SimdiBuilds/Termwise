@@ -1031,29 +1031,8 @@ app.get('/api/tests/history', (req, res) => {
 });
 
 // --- VITE MIDDLEWARE & STATIC SERVING ---
-async function setupServer() {
-  if (process.env.NODE_ENV !== 'production') {
-    const { createServer: createViteServer } = await import('vite');
-    const vite = await createViteServer({
-      server: { middlewareMode: true },
-      appType: 'spa',
-    });
-    app.use(vite.middlewares);
-  } else {
-    const distPath = path.join(process.cwd(), 'dist');
-    app.use(express.static(distPath));
-    app.get('*', (req, res) => {
-      res.sendFile(path.join(distPath, 'index.html'));
-    });
-  }
-
-  app.listen(PORT, '0.0.0.0', () => {
-    console.log(`Termwise server listening on http://0.0.0.0:${PORT}`);
-  });
-}
-
-if (!process.env.VERCEL) {
-  setupServer();
-}
-
+// This file only defines the Express app. It never imports vite or calls
+// app.listen(), so Vercel's function bundler (which statically traces every
+// reachable import) never pulls dev-only tooling into the serverless bundle.
+// Local dev runs dev.ts; self-hosted production runs start.ts.
 export default app;
