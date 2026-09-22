@@ -8,5 +8,5 @@ coverage/
 !.env.example
 
 # Local study data (contains your notes and progress)
-data/
+/data/
 dist/

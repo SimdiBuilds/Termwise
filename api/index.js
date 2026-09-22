@@ -1,47 +1,12 @@
-var __create = Object.create;
-var __defProp = Object.defineProperty;
-var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
-var __getOwnPropNames = Object.getOwnPropertyNames;
-var __getProtoOf = Object.getPrototypeOf;
-var __hasOwnProp = Object.prototype.hasOwnProperty;
-var __export = (target, all) => {
-  for (var name in all)
-    __defProp(target, name, { get: all[name], enumerable: true });
-};
-var __copyProps = (to, from, except, desc) => {
-  if (from && typeof from === "object" || typeof from === "function") {
-    for (let key of __getOwnPropNames(from))
-      if (!__hasOwnProp.call(to, key) && key !== except)
-        __defProp(to, key, { get: () => from[key], enumerable: !(desc = __getOwnPropDesc(from, key)) || desc.enumerable });
-  }
-  return to;
-};
-var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__getProtoOf(mod)) : {}, __copyProps(
-  // If the importer is in node compatibility mode or this is not an ESM
-  // file that has been converted to a CommonJS file using a Babel-
-  // compatible transform (i.e. "__esModule" has not been set), then set
-  // "default" to the CommonJS "module.exports" for node compatibility.
-  isNodeMode || !mod || !mod.__esModule ? __defProp(target, "default", { value: mod, enumerable: true }) : target,
-  mod
-));
-var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
-
-// api/_source.ts
-var source_exports = {};
-__export(source_exports, {
-  default: () => source_default
-});
-module.exports = __toCommonJS(source_exports);
-
 // server.ts
-var import_express = __toESM(require("express"), 1);
-var import_multer = __toESM(require("multer"), 1);
-var import_crypto = __toESM(require("crypto"), 1);
+import express from "express";
+import multer from "multer";
+import crypto from "crypto";
 
 // server/storage.ts
-var import_fs = __toESM(require("fs"), 1);
-var import_path = __toESM(require("path"), 1);
-var import_supabase_js = require("@supabase/supabase-js");
+import fs from "fs";
+import path from "path";
+import { createClient } from "@supabase/supabase-js";
 
 // server/data/furtherMathCurriculum.ts
 var FURTHER_MATH_SUBJECT = {
@@ -1183,14 +1148,14 @@ var FURTHER_MATH_QUESTIONS = [
 ];
 
 // server/storage.ts
-var DATA_DIR = process.env.VERCEL ? "/tmp/termwise-data" : import_path.default.join(process.cwd(), "data");
-var DB_FILE = import_path.default.join(DATA_DIR, "database.json");
+var DATA_DIR = process.env.VERCEL ? "/tmp/termwise-data" : path.join(process.cwd(), "data");
+var DB_FILE = path.join(DATA_DIR, "database.json");
 function getSupabaseClient() {
   const url = process.env.SUPABASE_URL;
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_ANON_KEY;
   if (url && key) {
     try {
-      return (0, import_supabase_js.createClient)(url, key);
+      return createClient(url, key);
     } catch (err) {
       console.warn("Failed to initialize Supabase client:", err);
     }
@@ -1785,15 +1750,15 @@ var StorageManager = class {
     this.persist();
   }
   ensureDataDir() {
-    if (!import_fs.default.existsSync(DATA_DIR)) {
-      import_fs.default.mkdirSync(DATA_DIR, { recursive: true });
+    if (!fs.existsSync(DATA_DIR)) {
+      fs.mkdirSync(DATA_DIR, { recursive: true });
     }
   }
   loadDatabase() {
     let data = SEED_DATA;
     try {
-      if (import_fs.default.existsSync(DB_FILE)) {
-        const raw = import_fs.default.readFileSync(DB_FILE, "utf-8");
+      if (fs.existsSync(DB_FILE)) {
+        const raw = fs.readFileSync(DB_FILE, "utf-8");
         const parsed = JSON.parse(raw);
         if (parsed && typeof parsed === "object" && Array.isArray(parsed.subjects)) {
           data = parsed;
@@ -1862,7 +1827,7 @@ var StorageManager = class {
   }
   saveDatabase(data) {
     try {
-      import_fs.default.writeFileSync(DB_FILE, JSON.stringify(data, null, 2), "utf-8");
+      fs.writeFileSync(DB_FILE, JSON.stringify(data, null, 2), "utf-8");
     } catch (e) {
       console.error("Failed to write database.json:", e);
     }
@@ -2168,7 +2133,7 @@ var StorageManager = class {
 var storage = new StorageManager();
 
 // server/ai/geminiProvider.ts
-var import_genai = require("@google/genai");
+import { GoogleGenAI } from "@google/genai";
 
 // server/ai/jsonHelper.ts
 function safeParseJson(raw, fallback) {
@@ -2778,10 +2743,10 @@ ${normalized}`;
 var aiCurriculumUnderstandingService = new AICurriculumUnderstandingService();
 
 // server/services/pdfExtractor.ts
-var import_pdf_parse = require("pdf-parse");
+import { PDFParse } from "pdf-parse";
 async function extractTextFromPdfBuffer(buffer) {
   try {
-    const parser = new import_pdf_parse.PDFParse({ data: buffer });
+    const parser = new PDFParse({ data: buffer });
     const result = await parser.getText();
     if (result && Array.isArray(result.pages) && result.pages.length > 0) {
       const formatted = result.pages.map((p, idx) => `=== PAGE ${p.num || idx + 1} ===
@@ -2801,7 +2766,7 @@ ${p.text || ""}`).join("\n\n");
     console.warn("PDFParse instance getText failed, trying direct function call fallback:", err);
   }
   try {
-    const legacy = import_pdf_parse.PDFParse;
+    const legacy = PDFParse;
     if (typeof legacy === "function") {
       const data = await legacy(buffer);
       let outText = data.text || "";
@@ -2946,7 +2911,7 @@ var GeminiProvider = class {
   }
   getClient() {
     if (!this.aiClient && process.env.GEMINI_API_KEY) {
-      this.aiClient = new import_genai.GoogleGenAI({
+      this.aiClient = new GoogleGenAI({
         apiKey: process.env.GEMINI_API_KEY,
         httpOptions: {
           headers: {
@@ -5167,7 +5132,7 @@ Now test this procedure on the challenge question below:`,
 var flexibleLessonEngine = new FlexibleLessonEngine();
 
 // server/services/batchOnboardingService.ts
-var import_mammoth = __toESM(require("mammoth"), 1);
+import mammoth from "mammoth";
 var BatchOnboardingService = class {
   /**
    * Phase 1: Reads uploaded files, extracts text, and uses AI to classify into academic subjects.
@@ -5184,7 +5149,7 @@ var BatchOnboardingService = class {
           extractedText = pdfData.text || "";
           pageCount = pdfData.pageCount || 1;
         } else if (file.filename.toLowerCase().endsWith(".docx")) {
-          const docx = await import_mammoth.default.extractRawText({ buffer: file.buffer });
+          const docx = await mammoth.extractRawText({ buffer: file.buffer });
           extractedText = docx.value || "";
         } else if (file.filename.toLowerCase().endsWith(".doc")) {
           throw new Error("Legacy .doc files are not supported. Save the file as .docx or PDF.");
@@ -5400,20 +5365,20 @@ var BatchOnboardingService = class {
 var batchOnboardingService = new BatchOnboardingService();
 
 // server.ts
-var app = (0, import_express.default)();
+var app = express();
 var PORT = Number(process.env.PORT) || 3e3;
-app.use(import_express.default.json({ limit: "10mb" }));
-app.use(import_express.default.urlencoded({ extended: true, limit: "10mb" }));
+app.use(express.json({ limit: "10mb" }));
+app.use(express.urlencoded({ extended: true, limit: "10mb" }));
 var ACCESS_PASSWORD = process.env.APP_PASSWORD;
 if (ACCESS_PASSWORD) {
-  const digest = (v) => import_crypto.default.createHash("sha256").update(v).digest();
+  const digest = (v) => crypto.createHash("sha256").update(v).digest();
   app.use((req, res, next) => {
     if (req.path === "/api/health") return next();
     const [scheme, encoded] = (req.headers.authorization || "").split(" ");
     if (scheme === "Basic" && encoded) {
       const decoded = Buffer.from(encoded, "base64").toString("utf8");
       const pass = decoded.slice(decoded.indexOf(":") + 1);
-      if (import_crypto.default.timingSafeEqual(digest(pass), digest(ACCESS_PASSWORD))) return next();
+      if (crypto.timingSafeEqual(digest(pass), digest(ACCESS_PASSWORD))) return next();
     }
     res.set("WWW-Authenticate", 'Basic realm="Termwise", charset="UTF-8"');
     res.status(401).send("Authentication required");
@@ -5434,7 +5399,7 @@ if (process.env.VERCEL) {
     next();
   });
 }
-var upload = (0, import_multer.default)({ storage: import_multer.default.memoryStorage(), limits: { fileSize: 30 * 1024 * 1024 } });
+var upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 30 * 1024 * 1024 } });
 app.get("/api/health", (req, res) => {
   res.json({ status: "ok", timestamp: (/* @__PURE__ */ new Date()).toISOString() });
 });
@@ -6273,3 +6238,6 @@ var server_default = app;
 
 // api/_source.ts
 var source_default = server_default;
+export {
+  source_default as default
+};
