@@ -1,49 +1,44 @@
-import { PDFParse } from 'pdf-parse';
-
-export async function extractTextFromPdfBuffer(buffer: Buffer): Promise<{ text: string; pageCount: number }> {
+export async function extractTextFromPdfBuffer(
+  buffer: Buffer
+): Promise<{ text: string; pageCount: number }> {
   try {
+    // Load pdf-parse only when a PDF is actually being processed.
+    // This prevents the PDF.js/DOMMatrix dependency from crashing
+    // unrelated API routes during serverless startup.
+    const { PDFParse } = await import('pdf-parse');
+
     const parser = new PDFParse({ data: buffer });
-    const result = await parser.getText();
-    
-    if (result && Array.isArray(result.pages) && result.pages.length > 0) {
-      const formatted = result.pages
-        .map((p: any, idx: number) => `=== PAGE ${p.num || idx + 1} ===\n${p.text || ''}`)
-        .join('\n\n');
-      return {
-        text: formatted,
-        pageCount: result.total || result.pages.length,
-      };
-    }
-    
-    if (result && typeof result.text === 'string' && result.text.trim()) {
-      return {
-        text: result.text,
-        pageCount: result.total || 1,
-      };
+
+    try {
+      const result = await parser.getText();
+
+      if (result && Array.isArray(result.pages) && result.pages.length > 0) {
+        const formatted = result.pages
+          .map(
+            (p: any, idx: number) =>
+              `=== PAGE ${p.num || idx + 1} ===\n${p.text || ''}`
+          )
+          .join('\n\n');
+
+        return {
+          text: formatted,
+          pageCount: result.total || result.pages.length,
+        };
+      }
+
+      if (result && typeof result.text === 'string' && result.text.trim()) {
+        return {
+          text: result.text,
+          pageCount: result.total || 1,
+        };
+      }
+
+      return { text: '', pageCount: 0 };
+    } finally {
+      await parser.destroy();
     }
   } catch (err) {
-    console.warn('PDFParse instance getText failed, trying direct function call fallback:', err);
+    console.warn('PDF text extraction failed:', err);
+    return { text: '', pageCount: 0 };
   }
-
-  // Legacy pdf-parse fallback if class-based instantiation fails
-  try {
-    const legacy = (PDFParse as any);
-    if (typeof legacy === 'function') {
-      const data = await legacy(buffer);
-      let outText = data.text || '';
-      // If no page markers exist, check for form feed (\f) delimiters
-      if (!outText.includes('=== PAGE') && outText.includes('\f')) {
-        const pages = outText.split('\f');
-        outText = pages.map((p: string, idx: number) => `=== PAGE ${idx + 1} ===\n${p}`).join('\n\n');
-      }
-      return {
-        text: outText,
-        pageCount: data.numpages || 1,
-      };
-    }
-  } catch (legacyErr) {
-    console.warn('Legacy pdf-parse call failed:', legacyErr);
-  }
-
-  return { text: '', pageCount: 0 };
 }
